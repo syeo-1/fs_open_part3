@@ -10,12 +10,24 @@ morgan.token('json', function getBody (req) {
 })
 
 
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :json'))
+// app.use(morgan(':method :url :status :res[content-length] - :response-time ms :json'))
 
-// morgan.token('json', function getJSON(request,response) {
-//     response.json(person)
-// })
+const morganTiny = morgan('tiny')
+const morganPost = morgan(':method :url :status :res[content-length] - :response-time ms :json')
 
+const getHttpMethod = (request, response, next) => {
+    // console.log(JSON.stringify(request.method))
+    const method = request.method
+    if (method === "POST") {
+        morganPost(request, response, next)
+    } else {
+        morganTiny(request, response, next)
+    }
+    // console.log(typeof(request.body))
+    // console.log('---')
+    next()
+}
+app.use(getHttpMethod)
 
 let persons = [
     {
