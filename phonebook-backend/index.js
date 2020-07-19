@@ -1,29 +1,36 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
+// const Person = require('./models/person')
+const mongoose = require('mongoose')
+
 
 app.use(cors())
 app.use(express.json())
-// app.use(morgan('tiny'))
+
+
+const url = process.env.MONGODB_URI 
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+})
+
+const Person = mongoose.model('Person', personSchema)
 
 morgan.token('json', function getBody (req) {
     return JSON.stringify(req.body)
 })
 
-const morganTiny = morgan('tiny')
-const morganPost = morgan(':method :url :status :res[content-length] - :response-time ms :json')
-
-const getHttpMethod = (request, response, next) => {
-    const method = request.method
-    if (method === "POST") {
-        morganPost(request, response, next)
-    } else {
-        morganTiny(request, response, next)
-    }
-    next()
-}
-app.use(getHttpMethod)
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :json', {
+    skip: function(req, res) {return req.method !== "POST"}
+}))
+app.use(morgan('tiny', {
+    skip: function(req, resp) {return req.method === "POST"}
+}))
 
 let persons = [
     {
@@ -48,9 +55,15 @@ let persons = [
     }
 ]
 
+// app.get('/api/persons', (request, response) => {
+//     response.json(persons)
+// })
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+        response.json(persons)
+    }).catch(error => console.log(error))
 })
+
 
 app.get('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
@@ -103,7 +116,7 @@ app.post('/api/persons', (request, response) => {
     response.json(person)
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
