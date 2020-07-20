@@ -55,6 +55,7 @@ let persons = [
     }
 ]
 
+
 // app.get('/api/persons', (request, response) => {
 //     response.json(persons)
 // })
@@ -127,6 +128,18 @@ app.post('/api/persons', (request, response) => {
     })
     // response.json(person)
 })
+
+const errorHandler = (error, request, response, next) => {
+    console.log(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformmated id' })
+    }
+
+    next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
