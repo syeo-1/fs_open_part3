@@ -3,23 +3,23 @@ const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
-// const Person = require('./models/person')
-const mongoose = require('mongoose')
+const Person = require('./models/person')
+// const mongoose = require('mongoose')
 
 
 app.use(cors())
 app.use(express.json())
 
 
-const url = process.env.MONGODB_URI 
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+// const url = process.env.MONGODB_URI 
+// mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
 
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
-})
+// const personSchema = new mongoose.Schema({
+//   name: String,
+//   number: String,
+// })
 
-const Person = mongoose.model('Person', personSchema)
+// const Person = mongoose.model('Person', personSchema)
 
 morgan.token('json', function getBody (req) {
     return JSON.stringify(req.body)
@@ -87,7 +87,7 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-    const id = Math.floor((Math.random()*1000)+1)
+    // const id = Math.floor((Math.random()*1000)+1)
     const body = request.body
 
     // console.log(body)
@@ -105,15 +105,22 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const person = {
+    const person = new Person({
         name: body.name,
         number: body.number,
-        id: id,
-    }
+    })
+    // const person = {
+    //     name: body.name,
+    //     number: body.number,
+    //     id: id,
+    // }
     
-    persons = persons.concat(person)
+    // persons = persons.concat(person)
     // console.log(persons)
-    response.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
+    // response.json(person)
 })
 
 const PORT = process.env.PORT
