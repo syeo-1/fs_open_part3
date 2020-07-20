@@ -56,7 +56,7 @@ const App = () => {
   const [ persons, setPersons ] = useState([]) 
   const [ newName, setNewName ] = useState('')
   const [newNumber, setNewNumber] = useState('')
-  const [filterNumbers, setFilterNumbers] = useState(true)
+  const [filterNumbers, setFilterNumbers] = useState(false)
   const [searchString, setSearchString] = useState('')
   const [addMessage, setAddMessage] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
@@ -69,6 +69,10 @@ const App = () => {
         setPersons(response.data)
       })
   }, [])
+
+  useEffect(() => {
+    searchString.length === 0 ? setFilterNumbers(false) : setFilterNumbers(true)
+  },[searchString])
 
   const addData = (event) => {
     event.preventDefault()
@@ -134,10 +138,11 @@ const App = () => {
   }
 
   const handleSearchString = (event) => {
-    // console.log(event.target.value);
+    console.log(event.target.value);
     setSearchString(event.target.value)
-
-    searchString.length === 0 ? setFilterNumbers(false) : setFilterNumbers(true)
+    // searchString.length === 0 ? setFilterNumbers(false) : setFilterNumbers(true)
+    console.log(searchString.length)
+    console.log(filterNumbers)
     // console.log("persons to show", personsToShow);
   }
   
