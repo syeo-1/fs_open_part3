@@ -4,6 +4,7 @@ const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
+const person = require('./models/person')
 // const mongoose = require('mongoose')
 
 
@@ -59,26 +60,38 @@ let persons = [
 // app.get('/api/persons', (request, response) => {
 //     response.json(persons)
 // })
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
     Person.find({}).then(persons => {
         response.json(persons)
-    }).catch(error => console.log(error))
+    }).catch(error => next(error))
 })
 
 
-app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
-    return person ? response.json(person) : response.status(404).end()
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then(person => {
+            if (person) {
+                response.json(person)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
+    // const id = Number(request.params.id)
+    // const person = persons.find(person => person.id === id)
+    // return person ? response.json(person) : response.status(404).end()
 })
 
 app.get('/info', (request, response) => {
-    const num_persons = persons.length
-    const date = new Date()
-    response.send(
-        `<p>Phonebook has info for ${num_persons} people</p>
-        <p>${date}</p>`
-        )
+    let num_persons
+    Person.find({}).then(persons => {
+        num_persons = persons.length
+        const date = new Date()
+        response.send(
+            `<p>Phonebook has info for ${num_persons} people</p>
+            <p>${date}</p>`
+            )
+    })
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
