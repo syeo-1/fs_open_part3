@@ -4,7 +4,8 @@ const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
-const person = require('./models/person')
+// const uniqueValidator = require('mongoose-unique-validator')
+// const person = require('./models/person')
 // const mongoose = require('mongoose')
 
 
@@ -105,7 +106,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
         .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     // const id = Math.floor((Math.random()*1000)+1)
     const body = request.body
 
@@ -139,6 +140,7 @@ app.post('/api/persons', (request, response) => {
     person.save().then(savedPerson => {
         response.json(savedPerson)
     })
+    .catch(error => next(error))
     // response.json(person)
 })
 
@@ -162,6 +164,8 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformmated id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(409).send({error: 'expected name to be unique'})
     }
 
     next(error)
