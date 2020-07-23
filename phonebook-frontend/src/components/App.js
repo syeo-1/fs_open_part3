@@ -95,12 +95,32 @@ const App = () => {
       personService
         .addPerson(nameObject)
         .then(response => {setPersons(persons.concat(response.data))})
-        .then(
-          setAddMessage(`Added ${nameObject.name}`),
+        .then(() => {
+          setAddMessage(`Added ${nameObject.name}`)
           setTimeout(() => {
             setAddMessage(null)
           }, 5000)
-        )
+        })
+        .catch(error => {
+          let check = 0
+          for (let i = 0 ; i < nameObject.number.length ; i++) {
+            if (nameObject.number[i] >= '0' && nameObject.number[i] <= '9') {
+              check++
+            }
+          }
+          console.log("a check: ", check)
+          if (nameObject.name.length < 3 && check < 8) {
+            setErrorMessage("name is shorter than min length of 3, number must have at least 8 digits")
+          } else if (nameObject.name.length < 3) {
+            setErrorMessage(`Person validation failed: name: ${nameObject.name} is shorter than the minimum allowed length (3)`)
+          } else if (check < 8) {
+            setErrorMessage(`${nameObject.name}'s number: ${nameObject.number} has fewer than the min allowed number of digits (8)`)
+          }
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+          console.log(error.response.data)
+        })
     } else {
       if (window.confirm(`${nameObject.name} is already added to phonebook. Replace the old number with a new one?`)) {
         // console.log(persons);
@@ -113,9 +133,22 @@ const App = () => {
               .map(person => person.id === idToUpdate ? response.data : person))
           })
           .catch(error => {
-            setErrorMessage(
-              `Information of ${nameObject.name} has already been removed from server`
-            )
+            let check = 0
+            for (let i = 0 ; i < nameObject.number.length ; i++) {
+              if (nameObject.number[i] >= '0' && nameObject.number[i] <= '9') {
+                check++
+              }
+            }
+            // console.log(check)
+            if (nameObject.name.length < 3 && check < 8) {
+              setErrorMessage("name is shorter than min length of 3, number must have at least 8 digits")
+            } else if (nameObject.name.length < 3) {
+              setErrorMessage(`Person validation failed: name: ${nameObject.name} is shorter than the minimum allowed length (3)`)
+            } else if (check < 8) {
+              setErrorMessage(`${nameObject.name}'s number: ${nameObject.number} has fewer than the min allowed number of digits (8)`)
+            } else {
+              setErrorMessage( `Information of ${nameObject.name} has already been removed from server`)
+            }
             setTimeout(() => {
               setErrorMessage(null)
             }, 5000)

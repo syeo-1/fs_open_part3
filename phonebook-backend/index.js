@@ -4,6 +4,7 @@ const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
+const { query } = require('express')
 // const uniqueValidator = require('mongoose-unique-validator')
 // const person = require('./models/person')
 // const mongoose = require('mongoose')
@@ -147,25 +148,47 @@ app.post('/api/persons', (request, response, next) => {
 app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body
 
-    const person = {
+    // const person = {
+    //     name: body.name,
+    //     number: body.number,
+    // }
+
+    //try using the below on july 22 :)?
+    const person = new Person({
         name: body.name,
         number: body.number,
-    }
+    })
+    // Person.updateOne({_id: request.params.id }, {$set: person}, {new: true, runValidators: true})
+    //     .then(updatedPerson => {
+    //         console.log("updatedperson: ", updatedPerson)
+    //         response.json(updatedPerson)
+    //     })
+    //     .catch(error => {
+    //         // console.log(error)
+    //         next(error)
+    //     })
 
-    Person.findByIdAndUpdate(request.params.id, person, {new: true})
+    // 
+    Person.findByIdAndUpdate(request.params.id, {number: person.number}, { runValidators: true, new: true})
         .then(updatedPerson => {
+            // console.log("response: ", response.json(updatedPerson))
+            // console.log("words")
             response.json(updatedPerson)
         })
-        .catch(error => next(error))
+        .catch(error => {
+            // console.log(error)
+            // console.log("stuff")
+            next(error)
+        })
 })
 
 const errorHandler = (error, request, response, next) => {
-    console.log(error.message)
+    console.log("error: ", error.message)
 
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformmated id' })
     } else if (error.name === 'ValidationError') {
-        return response.status(409).send({error: 'expected name to be unique'})
+        return response.status(400).send({error: 'a validation error occured'})
     }
 
     next(error)
